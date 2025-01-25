@@ -48,16 +48,16 @@ jobs:
 
     steps:
       - name: Start ssh-agent
-        run: eval $(ssh-agent -s)
+        run: eval $(ssh-agent -s)  # Запускает ssh-agent
 
       - name: Add SSH private key
-        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -
+        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -  # Добавляет приватный ключ
 
       - name: Add SSH configuration
         run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -H localhost >> ~/.ssh/known_hosts
+          mkdir -p ~/.ssh  # Создает директорию для SSH, если она не существует
+          chmod 700 ~/.ssh  # Устанавливает права на директорию
+          ssh-keyscan -H localhost >> ~/.ssh/known_hosts  # Добавляет хост в список известных
 
       - name: Deploy application
-        run: ssh -o StrictHostKeyChecking=no klava@localhost 'bash -s' < ./deploy.sh
+        run: ssh -o StrictHostKeyChecking=no klava@localhost 'bash -s' < ./deploy.sh  # Выполняет скрипт развертывания через SSH
