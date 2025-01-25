@@ -27,18 +27,3 @@ jobs:
 
       - name: Run tests
         run: mvn test
-
-      - name: Start ssh-agent
-        run: eval $(ssh-agent -s)
-
-      - name: Add SSH private key
-        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -
-
-      - name: Add SSH configuration
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          ssh-keyscan -H localhost >> ~/.ssh/known_hosts
-
-      - name: Deploy application
-        run: ssh -o StrictHostKeyChecking=no klava@localhost 'bash -s' < ./deploy.sh
