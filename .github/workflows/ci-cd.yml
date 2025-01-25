@@ -1,28 +1,25 @@
-name: Java CI
+name: Deploy to Local Machine
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up JDK
-        uses: actions/setup-java@v1
-        with:
-          java-version: '11'
+    - name: Set up SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan localhost >> ~/.ssh/known_hosts
 
-      - name: Build with Maven
-        run: mvn install
-
-      - name: Run tests
-        run: mvn test
+    - name: Deploy application
+      run: |
+        ssh -o StrictHostKeyChecking=no user@localhost 'bash -s' < ./deploy.sh
