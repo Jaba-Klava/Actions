@@ -19,7 +19,7 @@ jobs:
       - name: Установить JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '21' 
+          java-version: '11' 
           
       - name: Собрать проект
         run: mvn clean install  
