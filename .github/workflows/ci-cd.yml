@@ -28,13 +28,23 @@ jobs:
       - name: Run tests
         run: mvn test
 
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H localhost >> ~/.ssh/known_hosts
+      - name: Start ssh-agent
+        run: eval $(ssh-agent -s)
+
+      - name: Add SSH private key
+        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -
 
       - name: Deploy application
-        run: |
-          ssh -o StrictHostKeyChecking=no klava@localhost 'bash -s' < ./deploy.sh
+        run: ssh -o StrictHostKeyChecking=no klava@localhost 'bash -s' < ./deploy.sh
+
+        
+
+      #- name: Set up SSH key
+        #run: |
+          ##echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          #chmod 600 ~/.ssh/id_rsa
+          #ssh-keyscan -H localhost >> ~/.ssh/known_hosts
+
+      #- name: Deploy application
+        #run: |
+          #ssh -o StrictHostKeyChecking=no klava@localhost 'bash -s' < ./deploy.sh
