@@ -15,9 +15,9 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest] #разные операционные системы для тестирования
         include:
-          - os: macos-latest
-            architecture: x64 # архитектура х64 для macOS
-          - os: macos-latest
+          - os: ubuntu-latest
+            architecture: x64 
+          - os: ubuntu-latest
             architecture: arm64
             
     steps:
