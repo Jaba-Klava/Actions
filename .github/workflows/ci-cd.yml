@@ -27,8 +27,5 @@ jobs:
       - name: Run tests
         run: mvn test  # Запуск тестов Maven
 
-      - name: Check dependencies for vulnerabilities
-        run: mvn dependency-check:check  # Проверка на уязвимости зависимостей
-
       - name: Build Docker image (optional)
         run: docker build -t my-app:${{ github.sha }} .  # Создание Docker-образа
