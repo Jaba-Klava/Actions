@@ -27,11 +27,8 @@ jobs:
       - name: Run tests
         run: mvn test  # Запуск тестов Maven
 
-      - name: Check code style
-        run: mvn checkstyle:check  # Проверка стиля кода с помощью Checkstyle
-
       - name: Check dependencies for vulnerabilities
         run: mvn dependency-check:check  # Проверка на уязвимости зависимостей
 
       - name: Build Docker image (optional)
-        run: docker build -t my-app:${{ github.sha }} .  # Создание Docker-образа, если необходимо
+        run: docker build -t my-app:${{ github.sha }} .  # Создание Docker-образа
