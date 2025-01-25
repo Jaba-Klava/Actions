@@ -1,4 +1,5 @@
 name: CI/CD Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -10,16 +11,7 @@ on:
 
 jobs:
   build-and-test:  # Джоб для сборки и тестирования
-    runs-on: ${{ matrix.os }}  # Запуск на разных операционных системах, указанных в матрице
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]  # Разные операционные системы для тестирования
-        include:
-          - os: macos-latest 
-            architecture: x64  # Архитектура x64 для macOS
-          - os: macos-latest 
-            architecture: arm64  # Архитектура arm64 для macOS
-
+    runs-on: ubuntu-latest  # Запуск на Ubuntu
     steps:
       - name: Checkout code
         uses: actions/checkout@v2  # Клонируем репозиторий
@@ -40,10 +32,7 @@ jobs:
         run: mvn checkstyle:check  # Проверка стиля кода с помощью Checkstyle
 
       - name: Check dependencies for vulnerabilities
-        run: mvn dependency-check:check  # Проверка на уязвимости зависимостей с помощью dependency-check-plugin
+        run: mvn dependency-check:check  # Проверка на уязвимости зависимостей
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2  # Загрузка артефактов сборки
-        with:
-          name: my-artifact  # Имя для артефакта
-          path: target/my-artifact.jar  # Путь к артефакту сборки
+      - name: Build Docker image (optional)
+        run: docker build -t my-app:${{ github.sha }} .  # Создание Docker-образа, если необходимо
