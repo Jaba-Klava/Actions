@@ -3,61 +3,47 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - master  
+      - master  # Запускаем при пуше в ветку master
   pull_request:
     branches:
-      - master
+      - master  # Запускаем при создании pull request в ветку master
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up JDK 21 #установка JDK
-        uses: actions/setup-java@v2
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-
-      - name: Build project
-        run: mvn clean install
-
-  test:
-    runs-on: ubuntu-latest
-    needs: build  # Зависимость: тесты запускаются только после успешного завершения сборки
+  build-and-test:  # Джоб для сборки и тестирования
+    runs-on: ${{ matrix.os }}  # Запуск на разных операционных системах, указанных в матрице
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]  # Разные операционные системы для тестирования
+        include:
+          - os: macos-latest 
+            architecture: x64  # Архитектура x64 для macOS
+          - os: macos-latest 
+            architecture: arm64  # Архитектура arm64 для macOS
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2  # Клонируем репозиторий
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v2  # Устанавливаем JDK 21
         with:
-          java-version: '21'
-          distribution: 'temurin'
+          java-version: '21'  # Версия Java
+          distribution: 'temurin'  # Дистрибутив JDK
+
+      - name: Build project
+        run: mvn clean install  # Сборка проекта Maven
 
       - name: Run tests
-        run: mvn test
+        run: mvn test  # Запуск тестов Maven
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: test  # Зависимость: развертывание происходит только после успешного завершения тестов
+      - name: Check code style
+        run: mvn checkstyle:check  # Проверка стиля кода с помощью Checkstyle
 
-    steps:
-      - name: Start ssh-agent
-        run: eval $(ssh-agent -s)  # Запускает ssh-agent
+      - name: Check dependencies for vulnerabilities
+        run: mvn dependency-check:check  # Проверка на уязвимости зависимостей с помощью dependency-check-plugin
 
-      - name: Add SSH private key
-        run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | tr -d '\r' | ssh-add -  # Добавляет приватный ключ
-
-      - name: Add SSH configuration
-        run: |
-          mkdir -p ~/.ssh  # Создает директорию для SSH, если она не существует
-          chmod 700 ~/.ssh  # Устанавливает права на директорию
-          ssh-keyscan -H localhost >> ~/.ssh/known_hosts  # Добавляет хост в список известных
-
-      - name: Deploy application
-        run: ssh -o StrictHostKeyChecking=no klava@localhost 'bash -s' < ./deploy.sh  # Выполняет скрипт развертывания через SSH
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2  # Загрузка артефактов сборки
+        with:
+          name: my-artifact  # Имя для артефакта
+          path: target/my-artifact.jar  # Путь к артефакту сборки
