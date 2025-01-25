@@ -1,25 +1,38 @@
-name: Deploy to Local Machine
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
-      - main
+      - master  
+  pull_request:
+    branches:
+      - master
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Проверить код
+        uses: actions/checkout@v2
 
-    - name: Set up SSH key
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan localhost >> ~/.ssh/known_hosts
+      - name: Установить JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '21' 
+          
+      - name: Собрать проект
+        run: mvn clean install  
+      - name: Запустить тесты
+        run: mvn test  
 
-    - name: Deploy application
-      run: |
-        ssh -o StrictHostKeyChecking=no klava@localhost 'bash -s' < ./deploy.sh
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan localhost >> ~/.ssh/known_hosts
+
+      - name: Deploy application
+        run: |
+          ssh -o StrictHostKeyChecking=no klava@localhost 'bash -s' < ./deploy.sh
